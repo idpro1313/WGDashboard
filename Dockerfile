@@ -1,12 +1,12 @@
 FROM alpine:latest
-LABEL maintainer="dselen@nerthus.nl"
+LABEL maintainer="idpro13@gmail.com"
 
 # Declaring environment variables, change Peernet to an address you like, standard is a 24 bit subnet.
-ARG wg_net="10.0.0.1"
-ARG wg_port="51820"
+#ARG wg_net="10.20.30.1"
+#ARG wg_port="17968"
 
 # Following ENV variables are changable on container runtime because /entrypoint.sh handles that. See compose.yaml for more info.
-ENV TZ="Europe/Amsterdam"
+ENV TZ="Europe/Moscow"
 ENV global_dns="1.1.1.1"
 ENV isolate="none"
 ENV public_ip="0.0.0.0"
@@ -31,19 +31,21 @@ COPY ./src ${WGDASH}/src
 
 # Generate basic WireGuard interface. Echoing the WireGuard interface config for readability, adjust if you want it for efficiency.
 # Also setting the pipefail option, verbose: https://github.com/hadolint/hadolint/wiki/DL4006.
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN out_adapt=$(ip -o -4 route show to default | awk '{print $NF}') \
-  && echo -e "[Interface]\n\
-Address = ${wg_net}/24\n\
-PrivateKey =\n\
-PostUp = iptables -t nat -I POSTROUTING 1 -s ${wg_net}/24 -o ${out_adapt} -j MASQUERADE\n\
-PostUp = iptables -I FORWARD -i wg0 -o wg0 -j DROP\n\
-PreDown = iptables -t nat -D POSTROUTING -s ${wg_net}/24 -o ${out_adapt} -j MASQUERADE\n\
-PreDown = iptables -D FORWARD -i wg0 -o wg0 -j DROP\n\
-ListenPort = ${wg_port}\n\
-SaveConfig = true\n\
-DNS = ${global_dns}" > /configs/wg0.conf.template \
-  && chmod 600 /configs/wg0.conf.template
+
+#Moi pravki
+#SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+#RUN out_adapt=$(ip -o -4 route show to default | awk '{print $NF}') \
+#  && echo -e "[Interface]\n\
+#Address = ${wg_net}/24\n\
+#PrivateKey =\n\
+#PostUp = iptables -t nat -I POSTROUTING 1 -s ${wg_net}/24 -o ${out_adapt} -j MASQUERADE\n\
+#PostUp = iptables -I FORWARD -i wg0 -o wg0 -j DROP\n\
+#PreDown = iptables -t nat -D POSTROUTING -s ${wg_net}/24 -o ${out_adapt} -j MASQUERADE\n\
+#PreDown = iptables -D FORWARD -i wg0 -o wg0 -j DROP\n\
+#ListenPort = ${wg_port}\n\
+#SaveConfig = true\n\
+#DNS = ${global_dns}" > /configs/wg0.conf.template \
+#  && chmod 600 /configs/wg0.conf.template
 
 # Defining a way for Docker to check the health of the container. In this case: checking the gunicorn process.
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
